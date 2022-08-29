@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Documents\Ocado Robotics Bootcamp\CS_Shopping_Cart\cpp\build\CMakeFiles\1bd85ffe1cc2d09ea0a6c542151125d9\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{70B427D8-03A3-3C2B-BA03-0233B0DAC513}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,4 +1,4 @@
-#include "Solution.h"
+#include "build/Solution.h"
 #include "utils/FileParser.h"
 #include "utils/Image.h"
 #include "utils/SolutionEvaluator.h"
