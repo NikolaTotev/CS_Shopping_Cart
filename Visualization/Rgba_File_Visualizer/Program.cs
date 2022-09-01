@@ -76,7 +76,7 @@ namespace Rgba_File_Visualizer
 
                             Console.WriteLine($"{counter}");
                             normalBitmap.Save($"{file}_converted.png", ImageFormat.Png);
-                            normalBitmap.Save($"{file}_converted_super_red.png", ImageFormat.Png);
+                            superRedBitmap.Save($"{file}_converted_super_red.png", ImageFormat.Png);
                         }
                         catch (FileNotFoundException e)
                         {
