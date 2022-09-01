@@ -24,11 +24,11 @@ public:
   FileParser() = delete;
 
   static int32_t generateData(std::vector<T> &outInputData,
-                              std::vector<T> &outOutputData) {
+                              std::vector<T> &outOutputData, std::string inputFile, std::string outputFile) {
     FunctionTracer<std::chrono::milliseconds> tracer("generateData",
         "ms //not included into solution timings");
 
-    constexpr auto inputFile = "smallInput/input.bin";
+    //constexpr auto inputFile = "bigInput/input.bin";
     int32_t err = FileParser<T>::parseFile(inputFile, outInputData);
     if (EXIT_SUCCESS != err) {
       std::cerr << "FileParser::parseFile() failed for file: " << inputFile
@@ -36,10 +36,10 @@ public:
       return EXIT_FAILURE;
     }
 
-    constexpr auto outputFile = "smallInput/output.bin";
+    //constexpr auto outputFile = "bigInput/output.bin";
     err = FileParser<T>::parseFile(outputFile, outOutputData);
     if (EXIT_SUCCESS != err) {
-      std::cerr << "FileWritter::generateFile() failed for file: " << inputFile
+      std::cerr << "FileWriter::generateFile() failed for file: " << inputFile
                 << std::endl;
       return EXIT_FAILURE;
     }

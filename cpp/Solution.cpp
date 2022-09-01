@@ -1,9 +1,15 @@
 #include "Solution.h"
 
-#include "utils/EyePatterns.h"
+#include <chrono>
 
-void Solution::compute(std::vector<Image> inputImages)
+#include "utils/EyePatterns.h"
+#include "utils/FunctionTracer.h"
+
+void Solution::compute(std::vector<Image>& inputImages)
 {
+	FunctionTracer<std::chrono::milliseconds> tracer("compute",
+	                                                 "ms");
+
 	for (int imageNumber = 0; imageNumber < inputImages.size(); ++imageNumber)
 	{
 		scanImagePixels(&inputImages[imageNumber]);
@@ -15,9 +21,9 @@ void Solution::scanImagePixels(Image* target)
 {
 	for (int pixelIndex = 0; pixelIndex < target->pixels.size(); ++pixelIndex)
 	{
-		if(pixelIsOfInterest(target->pixels[pixelIndex]))
+		if (pixelIsOfInterest(target->pixels[pixelIndex]))
 		{
-			scanRegionOfInterest(target, calculateRoiStart(pixelIndex, target->resolution.width));
+			scanRegionOfInterest(target, vectroIndexToPoint(pixelIndex, target->resolution.width));
 		}
 	}
 }
@@ -27,9 +33,11 @@ void Solution::markRegionAsProcessed(Image* target, Point regionStart)
 	Point currentPixel = Point(regionStart.row, regionStart.column);
 	for (int rowOffset = 0; rowOffset < EYE_PATTERN_COL_SIZE; ++rowOffset)
 	{
+		currentPixel.row = regionStart.row;
 		currentPixel.row += rowOffset;
 		for (int colOffset = 0; colOffset < EYE_PATTERN_COL_SIZE; ++colOffset)
 		{
+			currentPixel.column = regionStart.column;
 			currentPixel.column += colOffset;
 
 			int vectorIndex = pointToVectorIndex(currentPixel, target->resolution.width);
@@ -50,17 +58,24 @@ void Solution::applyFiltering(Image* target, Point regionStart, int matchedTempl
 	int* completeTemplate = combineTemplates(matchedTemplateNumber);
 
 	Point currentPixel = Point(regionStart.row, regionStart.column);
-	for (int rowOffset = 0; rowOffset < EYE_PATTERN_COL_SIZE; ++rowOffset)
+	for (int rowOffset = 0; rowOffset < EYE_PATTERN_COL_SIZE; rowOffset++)
 	{
+		currentPixel.row = regionStart.row;
 		currentPixel.row += rowOffset;
-		for (int colOffset = 0; colOffset < EYE_PATTERN_COL_SIZE; ++colOffset)
+		for (int colOffset = 0; colOffset < EYE_PATTERN_COL_SIZE; colOffset++)
 		{
+			currentPixel.column = regionStart.column;
 			currentPixel.column += colOffset;
 
 			int templateIndex = pointToVectorIndex(Point(rowOffset, colOffset), 5);
 			int pixelIndex = pointToVectorIndex(currentPixel, target->resolution.width);
 
-			if(completeTemplate[templateIndex]==1 && pixelIsOfInterest(target->pixels[pixelIndex]))
+			if (completeTemplate[templateIndex] == 1)
+			{
+				int value = completeTemplate[templateIndex];
+			}
+
+			if (completeTemplate[templateIndex] == 1 && pixelIsOfInterest(target->pixels[pixelIndex]))
 			{
 				target->pixels[pixelIndex].red -= 150;
 			}
@@ -72,7 +87,7 @@ int* Solution::combineTemplates(int matchedInnerTemplateNum)
 {
 	int completeTemplate[25];
 
-	for (int i = 0; i < EYE_PATTERN_COL_SIZE*EYE_PATTERNS_COUNT; ++i)
+	for (int i = 0; i < EYE_PATTERN_COL_SIZE * EYE_PATTERN_COL_SIZE; ++i)
 	{
 		completeTemplate[i] = frameTemplate[i];
 	}
@@ -81,12 +96,14 @@ int* Solution::combineTemplates(int matchedInnerTemplateNum)
 
 	for (int rowOffset = 0; rowOffset < 3; ++rowOffset)
 	{
+		innerTemplatePosition.row = 1;
 		innerTemplatePosition.row += rowOffset;
 		for (int colOffset = 0; colOffset < 3; ++colOffset)
 		{
+			innerTemplatePosition.column = 1;
 			innerTemplatePosition.column += colOffset;
 			int completeTemplateIndex = pointToVectorIndex(innerTemplatePosition, 5);
-			int innerTemplateIndex = pointToVectorIndex(Point(rowOffset, colOffset),3);
+			int innerTemplateIndex = pointToVectorIndex(Point(rowOffset, colOffset), 3);
 
 			completeTemplate[completeTemplateIndex] += internalTemplates[matchedInnerTemplateNum][innerTemplateIndex];
 		}
@@ -106,13 +123,13 @@ void Solution::scanRegionOfInterest(Image* target, Point regionStart)
 
 	if (regionEnd.row > target->resolution.height)
 	{
-		int overflowAmount = target->resolution.height - regionEnd.row;
+		int overflowAmount = regionEnd.row - target->resolution.height;
 		availableRowShifts -= overflowAmount;
 	}
 
 	if (regionEnd.column > target->resolution.width)
 	{
-		int overflowAmount = target->resolution.width - regionEnd.column;
+		int overflowAmount = regionEnd.column - target->resolution.width;
 		availableColShifts -= overflowAmount;
 	}
 
@@ -122,24 +139,27 @@ void Solution::scanRegionOfInterest(Image* target, Point regionStart)
 
 	for (int rowOffset = 0; rowOffset < availableRowShifts; ++rowOffset)
 	{
+		subregionStart.row = regionStart.row;
 		subregionStart.row += rowOffset;
+
 
 		if (scanComplete) { break; }
 
 		for (int colOffset = 0; colOffset < availableColShifts; ++colOffset)
 		{
+			subregionStart.column = regionStart.column;
 			subregionStart.column += colOffset;
 
 			if (frameTemplateFound(target, subregionStart))
 			{
-				/*int potentialInternalTemplate = internalTemplateFound(target, subregionStart);
+				int potentialInternalTemplate = internalTemplateFound(target, subregionStart);
 
 				if (potentialInternalTemplate != -1)
 				{
-					applyFiltering(target, subregionStart,potentialInternalTemplate);
+					applyFiltering(target, subregionStart, potentialInternalTemplate);
 					markRegionAsProcessed(target, regionStart);
 					scanComplete = true;
-				}*/
+				}
 			}
 		}
 	}
@@ -160,39 +180,34 @@ Point Solution::calculateRoiStart(int32_t pixelVectorIndex, int32_t imageWidth)
 
 bool Solution::frameTemplateFound(Image* target, Point regionStart)
 {
-
 	Point currrentPixelPos = Point(regionStart.row, regionStart.column);
 
-	for (int rowOffset = 0; rowOffset < EYE_PATTERN_COL_SIZE; ++rowOffset)
+	for (int rowOffset = 0; rowOffset < EYE_PATTERN_COL_SIZE; rowOffset++)
 	{
+		currrentPixelPos.row = regionStart.row;
 		currrentPixelPos.row += rowOffset;
-		for (int colOffset = 0; colOffset < EYE_PATTERN_COL_SIZE; ++colOffset)
+
+		for (int colOffset = 0; colOffset < EYE_PATTERN_COL_SIZE; colOffset++)
 		{
+			currrentPixelPos.column = regionStart.column;
 			currrentPixelPos.column += colOffset;
 			int templateIndex = pointToVectorIndex(Point(rowOffset, colOffset), 5);
 			int pixelIndex = pointToVectorIndex(currrentPixelPos, target->resolution.width);
 
+			Pixel currentPixel = target->pixels[pixelIndex];
+			//Pixel currentPixel = target->pixels[0];
 
-			if (frameTemplate[templateIndex] == 1 && !pixelIsOfInterest(target->pixels[pixelIndex]))
+			if (frameTemplate[templateIndex] == 1 && !pixelIsOfInterest(currentPixel))
 			{
 				return false;
 			}
-			
 		}
-		currrentPixelPos.column = regionStart.column;
 	}
 	return true;
 }
 
 int Solution::internalTemplateFound(Image* target, Point regionStart)
 {
-	int internalTemplates[4][9]{
-		{0,1,0, 1,0,1, 0,1,0},
-		{0,1,0, 0,0,0, 0,1,0},
-		{0,0,0, 1,0,1, 0,0,0},
-		{1,0,1, 0,0,0, 1,0,1}
-	};
-
 	bool matches[4];
 	bool mistmatchDetected = false;
 
@@ -200,26 +215,31 @@ int Solution::internalTemplateFound(Image* target, Point regionStart)
 
 	for (int templateNumber = 0; templateNumber < 4; ++templateNumber)
 	{
-
-		for (int rowOffset = 0; rowOffset < 3; ++rowOffset)
+		for (int rowOffset = 0; rowOffset < 3; rowOffset++)
 		{
+			currentSubRegionPixel.row = regionStart.row + 1;
 			currentSubRegionPixel.row += rowOffset;
-			for (int colOffset = 0; colOffset < 3; ++colOffset)
+			for (int colOffset = 0; colOffset < 3; colOffset++)
 			{
+				currentSubRegionPixel.column = regionStart.column + 1;
 				currentSubRegionPixel.column += colOffset;
 				int templateIndex = pointToVectorIndex(Point(rowOffset, colOffset), 3);
 				int pixelIndex = pointToVectorIndex(currentSubRegionPixel, target->resolution.width);
-				if (internalTemplates[templateNumber][templateIndex] == 1 && !pixelIsOfInterest(target->pixels[pixelIndex]))
+				if (internalTemplates[templateNumber][templateIndex] == 1 && !pixelIsOfInterest(
+					target->pixels[pixelIndex]))
 				{
 					mistmatchDetected = true;
 				}
 			}
 		}
 
-		if (!mistmatchDetected)
+		if (mistmatchDetected)
 		{
-			matches[templateNumber] = true;
+			matches[templateNumber] = false;
+			mistmatchDetected = false;
 		}
+
+		
 	}
 
 	for (int templateNumber = 0; templateNumber < 4; ++templateNumber)

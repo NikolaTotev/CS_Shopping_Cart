@@ -8,8 +8,8 @@ class Solution
 	using Image = PackedImage;
 
 	int frameTemplate[25] = {
-			1, 1, 1, 1, 1,
-			1, 0, 0, 0, 1,
+			1, 1, 1, 1, 1,            
+			1, 0, 0, 0, 1,			  		
 			1, 0, 1, 0, 1,
 			1, 0, 0, 0, 1,
 			1, 1, 1, 1, 1 };
@@ -24,9 +24,9 @@ class Solution
 
 
 public:
-	void compute(std::vector<Image> inputImages);
+	void compute(std::vector<Image> &inputImages);
 
-	void markRegionAsProcessed(Image* target, Point regionStart);
+	void markRegionAsProcessed(Image *target, Point regionStart);
 
 	bool pixelIsOfInterest(Pixel pixel) const;
 
