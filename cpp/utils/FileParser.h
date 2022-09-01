@@ -28,7 +28,7 @@ public:
     FunctionTracer<std::chrono::milliseconds> tracer("generateData",
         "ms //not included into solution timings");
 
-    constexpr auto inputFile = "bigInput/input.bin";
+    constexpr auto inputFile = "smallInput/input.bin";
     int32_t err = FileParser<T>::parseFile(inputFile, outInputData);
     if (EXIT_SUCCESS != err) {
       std::cerr << "FileParser::parseFile() failed for file: " << inputFile
@@ -36,7 +36,7 @@ public:
       return EXIT_FAILURE;
     }
 
-    constexpr auto outputFile = "bigInput/output.bin";
+    constexpr auto outputFile = "smallInput/output.bin";
     err = FileParser<T>::parseFile(outputFile, outOutputData);
     if (EXIT_SUCCESS != err) {
       std::cerr << "FileWritter::generateFile() failed for file: " << inputFile

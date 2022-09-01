@@ -32,35 +32,35 @@ void writeImageToFile(StrideImage image, int height, int width, std::string file
 
 using Image = PackedImage;
 
-static void debugPrint(const StrideImage& img,
-	int32_t startRow, int32_t startCol) {
-	for (int32_t col = startCol; col < startCol + EYE_PATTERN_COL_SIZE; ++col) {
-		if (col < 10) {
-			std::cout << ' ';
-		}
-		std::cout << "[" << col << "] ";
-	}
-	std::cout << std::endl;
-
-	for (int32_t row = startRow; row < startRow + EYE_PATTERN_COL_SIZE; ++row) {
-		if (row < 10) {
-			std::cout << ' ';
-		}
-		std::cout << "[" << row << "]";
-
-		for (int32_t col = startCol; col < startCol + EYE_PATTERN_COL_SIZE; ++col) {
-			const int32_t pixelIdx = (row * img.resolution.width) + col;
-			std::cout << std::setw(4) << (int)img.redPixels[pixelIdx] << ' ';
-		}
-		std::cout << std::endl;
-	}
-}
+//static void debugPrint(const StrideImage& img,
+//	int32_t startRow, int32_t startCol) {
+//	for (int32_t col = startCol; col < startCol + EYE_PATTERN_COL_SIZE; ++col) {
+//		if (col < 10) {
+//			std::cout << ' ';
+//		}
+//		std::cout << "[" << col << "] ";
+//	}
+//	std::cout << std::endl;
+//
+//	for (int32_t row = startRow; row < startRow + EYE_PATTERN_COL_SIZE; ++row) {
+//		if (row < 10) {
+//			std::cout << ' ';
+//		}
+//		std::cout << "[" << row << "]";
+//
+//		for (int32_t col = startCol; col < startCol + EYE_PATTERN_COL_SIZE; ++col) {
+//			const int32_t pixelIdx = (row * img.resolution.width) + col;
+//			std::cout << std::setw(4) << (int)img.redPixels[pixelIdx] << ' ';
+//		}
+//		std::cout << std::endl;
+//	}
+//}
 
 int32_t main([[maybe_unused]] int32_t argc, [[maybe_unused]] char* argv[]) {
 	//Use the provided implementation that best suits your needs
 	//using Image = PackedImage;
 
-	using Image = StrideImage;
+	using Image = PackedImage;
 
 	std::vector<Image> inputImages;
 	std::vector<Image> outputImages;
@@ -71,16 +71,16 @@ int32_t main([[maybe_unused]] int32_t argc, [[maybe_unused]] char* argv[]) {
 
 	}
 
-	debugPrint(inputImages[0], 149, 295);
+	/*debugPrint(inputImages[0], 149, 295);
 
 	for (int i = 0; i < inputImages.size(); ++i)
 	{
 		std::string fileName = "o_small_image" + std::to_string(i)+".txt";
 		writeImageToFile(inputImages[i], inputImages[i].resolution.height, inputImages[i].resolution.width, fileName);
-	}
+	}*/
 
 	Solution solution;
-	//solution.compute(inputImages);
+	solution.compute(inputImages);
 
 	err = SolutionEvaluator<Image>::compare(inputImages, outputImages);
 	if (EXIT_SUCCESS != err) {
